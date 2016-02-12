@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bindings
+        xmlns="http://java.sun.com/xml/ns/jaxb"
+        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:annox="http://annox.dev.java.net"
+        extensionBindingPrefixes="xjc annox"
+        version="2.1">
+
+    <globalBindings localScoping="toplevel">
+      <!-- All classes should be serializable -->
+      <serializable uid="1"/>
+    </globalBindings>
+
+  <bindings schemaLocation="computerloss_rules.wsdl"> <!-- node="/wsdl:definitions"> -->
+    <bindings node="wsdl:complexType[@name='AssessRequest']">
+      <annox:annotate>
+        <annox:annotate annox:class="javax.xml.bind.annotation.XmlRootElement" name="AssessRequest"/>
+      </annox:annotate>
+    </bindings>
+  </bindings>
+
+</bindings>
