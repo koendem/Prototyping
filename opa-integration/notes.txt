@@ -1,0 +1,272 @@
+
+WebLogic
+=============
+1. Installing WebLogic.
+  sudo mkdir -p /opt/wls
+  cd /opt/wls
+  sudo unzip /home/koen/shared/oracle/WebLogic/wls1213_devzip_update1.zip 
+  cd /opt
+  sudo chmod -R koen:koen wls
+  cd /opt/wls/wls12130
+  ## Note: make sure you have Java_home and mw_home set. For example:
+  export MW_HOME=/opt/wls/wls12130
+  export JAVA_HOME=/usr/local/java/jdk1.8.0_45
+  ## But it is obviously better to have these added to the  /etc/profile   script.
+  . ./configure.sh
+  Note: you may answer 'n' to the question as to whether you want to create a new domain or not.
+  
+2. Setup WebLogic.
+  ## We follow the instructions in the README.txt file which is inside the /opt/wls/wls12130 folder.
+  . $MW_HOME/wlserver/server/bin/setWLSEnv.sh
+  
+3. Instead of following the README to set up a domain, we use the UI to do this.
+  cd oracle_common/common/bin
+  mkdir -p /opt/wls/domains/com.silvermoongroup
+  ## now start the UI with the following command:
+  ./config.sh
+  ## in the UI : select the directory created above for the 'domain location' of the new domain you want to create
+  ## Next step:  select the templates to be sued for creating the domain. Select the JAX-WS, JAX-RPC, JAX-WS SOAP/JMS Extension from [oracle_common]
+  ## Add an Administration user.  We used : lunosadmin / lunos123@
+  ## Note: I was unable to get through this process intially. It only worked for me when I created the user before starting the ./config.sh application  !!
+  ## Under Advanced Configuration, we select the following options:
+  ##   Administration Server,
+  ##   Node Manager,
+  ##   Managed Servers, Clusters and Coherence
+  ##   Deployments and Services
+  ## Next: 
+  ##   give the following name for the Administration Server:   LunosAdministrationServer
+  ## Next:
+  ##   give the Node manager credentials : lunosadmin/lunos123@
+  ## Next:
+  ##   Add one managed server, give it the name: opa
+  ## Do not add anything on clusters.
+  ## Next: Add one machine, call it : local
+  ## Next: assign both server (LunosAdministrationServer and opa) to the 'local' machine.
+  ## Push "next" 3 times and then "create". The configuration utility may take a *long* time to allow you to go to the next step (you need to do one more "next" step to get to the finish).
+  RESULT:
+	Oracle Weblogic Server Configuration Succeeded
+	New Domain com.silvermoongroup Creation Successful
+	Domain Location 
+	/opt/wls/domains/com.silvermoongroup
+	Admin Server URL 
+	http://LUNOS-DEV:7001/console
+	
+	
+WebLogic Administrator account: lunosadmin, password: lunos123@
+Node Manager Credentials : same as above
+Managed Server : opa port 7003
+Machines: local
+
+install directory : $MW_HOME
+	
+
+Starting WebLogic.
+  Step 1: start the Node Manager
+      ## change dir to the directory of the domain that was created during the installation of WebLogic.
+      cd /opt/wls/domains/com.silvermoongroup/bin
+      nohup ./startNodeManager.sh > nm.out&
+	  
+	  ## now check the status of the node manager:
+	  tail -f nm.out
+	  
+  Step 2: start the Administration Server
+      nohup ./startWebLogic.sh > wl.out&
+	  
+	  ## now check the status
+	  tail -f wl.out
+  Step 3: visit the Admin console to make sure it works.
+      open your browser and point it to:
+	  htpp://localhost:7001/console
+	  
+  Step 4: start the "opa" server
+      Two options are available here: 
+	   a) you can stay in the browser and navigate to : "servers" in the "Domain Structure pane at the left hand side
+	      After that go to the "control" tab (next to the "Configuration" tab under "Summary of Servers" (main pane)
+		  Now select the opa server and click start
+	   b) go back to the command line environment and type the following command:
+	      ./startManagedWebLogic.sh opa t3://localhost:7001
+
+
+CREATE IAAUSER and grant access.
+================================
+sqlplus SYS/password as SYSDBA @/home/koen/shared/OraclePolicyAutomation/create_IAAUSER_and_grant_statements.sql 
+
+ 
+
+
+
+INSTALL OPA (Oracle Policy Automation)
+======================================
+Make sure your WebLogic servers are running before installing OPA. Only if this server is running will the installer
+be able to deploy the opa applications.
+
+
+/usr/local/share/opa/bin
+
+. ./setEnv.sh
+
+./install.sh
+  action: 1. Full Install
+  runtime details: 
+       deployment name:  lunos_rules
+	   database type: Oracle 11g or later
+	   Database connection server and port: localhost:1521
+	   Oracle TNS name: XE
+	   Datasource user: IAAUSER
+	   password: password
+	   Database administration:
+	      Do you want to create a new database user and tablespace?
+             1. Yes, create a new tablespace and user
+             2. No, I'm installing to an existing user account
+
+          Choose an option 1-2 (default: 1): 2
+		  
+Admin password
+==============
+
+An password is required to configure services provided by the Hub. 
+This password corresponds to the user "admin".
+
+     admin password is: password
+	 
+OPA Encryption details
+===================
+
+The encryption key is used to encrypt sensitive data within the 
+OPA runtime database.
+
+IMPORTANT: You must take note of this encryption key, as you will 
+be required to enter it again if you redeploy or update your 
+web applications. You should keep this encryption key secure.
+
+Hit enter to generate new encryption key.
+
+Type 'quit'<enter> to exit this installer.
+
+Enter the deployment encryption key: encryptionkey
+
+Secure Session Cookie
+=====================
+
+By default OPA web applications are deployed with a secure session cookie.
+  1. Leave secure session cookies on
+  2. Turn off secure session cookies
+
+Choose an option 1-2 (default: 1): 2
+
+Weblogic Details
+================
+
+Enter the weblogic details. You should ensure that the WebLogic Admin server 
+for the Domain is running and contactable.
+
+Type 'quit'<enter> to exit this installer.
+
+
+Enter the WebLogic Domain Directory: /opt/wls/domains/com.silvermoongroup
+Enter the WebLogic wlst directory: /opt/wls/wls12130/wlserver/common/bin
+Enter WebLogic admin URL (default: t3://localhost:7001): 
+Enter WebLogic admin server name (default: AdminServer): LunosAdministrationServer
+Enter the deployment target (cluster or server) on the WebLogic domain: 
+  Empty target is not valid
+Enter the deployment target (cluster or server) on the WebLogic domain: opa
+
+Summary
+=====
+
+
+Action: Full Install
+Deployment Name: lunos_rules
+Database Type: oracle
+Database connection server and port: localhost:1521
+Database connection TNS name: XE
+Database connection user: IAAUSER
+OPA Hub Admin user password: specified
+Encryption Key: specified
+Secure session cookie: off
+Weblogic Domain Dir: /opt/wls/domains/com.silvermoongroup
+Weblogic WSLT Dir: /opt/wls/wls12130/wlserver/common/bin
+Weblogic Admin URL: t3://localhost:7001
+Weblogic Admin Server: LunosAdministrationServer
+Deployment Target: opa
+
+
+Ready to Install
+================
+
+All the information for this installation has been collected.
+
+Press <enter> to proceed, or type quit<enter> to exit: 
+Initial data seeded to database
+Admin password seeded to database
+Created web applications at /usr/local/share/opa/bin/../deploy/lunos_rules
+Deploying web applications using wlst
+Error Deploying OPA Web applications. wlst execution did not succeed
+
+** Installation was not successful **
+Error Deploying OPA Web applications. wlst execution did not succeed
+
+Database Creation: 
+Database was successfully created for lunos_rules
+
+Web Application Creation: 
+Web applications built to dir: /usr/local/share/opa/deploy/lunos_rules
+Encryption key: encryptionkey
+Please take note of the Encryption key. This will be needed if you need to redeploy the web applications
+
+
+Web Application Deployment: 
+There was some problems deploying the web applications
+wlst execution did not succeed
+Encryption key: encryptionkey
+Please take note of the Encryption key. This will be needed if you need to redeploy the web applications
+
+Web applications available for manual deployment at: /usr/local/share/opa/deploy/lunos_rules
+Check the install log file for details
+
+
+
+==========================
+|Deploy OPA application: |
+==========================
+
+
+run the following command:
+
+/opt/wls/wls12130/wlserver/common/bin/wlst.sh /usr/local/share/opa/bin/opahub_wlst_deploy.py -scriptdir=/usr/local/share/opa/bin -propfile=/usr/local/share/opa/bin/../deploy/lunos_rules/opahub_wlst.properties -deploydir=/usr/local/share/opa/bin/../deploy/lunos_rules
+
+   This command will ask :
+      Please enter your username :lunosadmin
+      Please enter your password :lunos123@
+      Connecting to t3://localhost:7001 with userid lunosadmin ...
+      ....
+	  now the script continues and asks the following:
+	  Datasource user password:password
+      ...
+
+After the deployment has completed, go back to the WebLogic console to start the opa server:  http://localhost:7001/console/
+
+
+
+
+------
+koen@LUNOS-DEV:/usr/local/share/opa/bin$ sudo vi /usr/local/share/opa/bin/../deploy/lunos_rules/opahub_wlst.properties
+[sudo] password for koen: 
+koen@LUNOS-DEV:/usr/local/share/opa/bin$ cp /usr/local/share/opa/bin/../deploy/lunos_rules/opahub_wlst.properties  /home/koen
+
+
+
+
+
+
+
+
+
+
+
+
+	   
+    
+
+
+

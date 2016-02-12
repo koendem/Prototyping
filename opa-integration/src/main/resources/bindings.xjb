@@ -13,7 +13,7 @@
     </globalBindings>
 
   <bindings schemaLocation="computerloss_rules.wsdl"> <!-- node="/wsdl:definitions"> -->
-    <bindings node="wsdl:complexType[@name='AssessRequest']">
+    <bindings node="//xsd:complexType[@name='AssessRequest']">
       <annox:annotate>
         <annox:annotate annox:class="javax.xml.bind.annotation.XmlRootElement" name="AssessRequest"/>
       </annox:annotate>
