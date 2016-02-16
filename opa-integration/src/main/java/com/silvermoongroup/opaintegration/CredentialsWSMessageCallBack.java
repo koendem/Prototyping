@@ -2,6 +2,7 @@ package com.silvermoongroup.opaintegration;
 
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.core.WebServiceMessageCallback;
+import org.springframework.ws.soap.SoapMessage;
 import org.springframework.ws.soap.saaj.SaajSoapMessage;
 
 import javax.xml.namespace.QName;
@@ -24,6 +25,10 @@ public class CredentialsWSMessageCallBack implements WebServiceMessageCallback {
 
     @Override
     public void doWithMessage(WebServiceMessage message) throws IOException, TransformerException {
+
+        /** first set the SoapAction in the http headers. */
+        ((SoapMessage)message).setSoapAction("http://oracle.com/determinations/server/12.2.1/rulebase/types/Assess");
+
         SOAPMessage soapMessage = ((SaajSoapMessage)message).getSaajMessage();
 
         SOAPHeader header = null;
@@ -34,9 +39,13 @@ public class CredentialsWSMessageCallBack implements WebServiceMessageCallback {
             SOAPElement username = usernameToken.addChildElement("Username", "wsse");
             SOAPElement password = usernameToken.addChildElement("Password", "wsse");
 
-            //password.addAttribute(type, "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText");
+            QName type = new QName("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0", "Type");
+            password.addAttribute(type, "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText");
+
             username.setTextContent(getUsername());
             password.setTextContent(getPassword());
+
+
         } catch (SOAPException e) {
             throw new TransformerException(e.getMessage());
         }

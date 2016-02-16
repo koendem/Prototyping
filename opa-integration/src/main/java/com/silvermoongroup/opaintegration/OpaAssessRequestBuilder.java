@@ -34,6 +34,8 @@ public class OpaAssessRequestBuilder {
      * @return
      */
     public static AssessRequest constructOpaAssessRequest() {
+
+
         AssessRequest request = new AssessRequest();
         GlobalInstanceType globalInstance = new GlobalInstanceType();
         request.setGlobalInstance(globalInstance);

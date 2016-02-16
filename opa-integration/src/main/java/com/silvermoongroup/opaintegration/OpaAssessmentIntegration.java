@@ -1,6 +1,9 @@
 package com.silvermoongroup.opaintegration;
 
 import com.oracle.opa.AssessRequest;
+import com.oracle.opa.AssessResponse;
+import com.oracle.opa.AttributeType;
+import com.oracle.opa.ObjectFactory;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
@@ -21,7 +24,9 @@ import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 import org.springframework.xml.transform.StringResult;
 
+import javax.xml.bind.JAXBElement;
 import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -52,6 +57,11 @@ public class OpaAssessmentIntegration {
         }
 
         AssessRequest request = new OpaAssessRequestBuilder().constructOpaAssessRequest();
+        ObjectFactory objectFactory = new ObjectFactory();
+        JAXBElement<AssessRequest> jaxbRequest = objectFactory.createAssessRequest(request);
+//        AssessResponse jaxbReponse = objectFactory.createAssessResponse();
+
+
 
         //--------now call the webservice.
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
@@ -64,11 +74,18 @@ public class OpaAssessmentIntegration {
         template.setUnmarshaller(marshaller);
         template.setMessageSender(messageSender());
 
-        WebServiceMessageCallback credentialsWSMessageCallBack = new CredentialsWSMessageCallBack("username","password");
+        WebServiceMessageCallback credentialsWSMessageCallBack = new CredentialsWSMessageCallBack("admin","password");
 
         template.setDefaultUri(endpointURL);
-        StringResult result = (StringResult) template.marshalSendAndReceive(request, credentialsWSMessageCallBack);
-        System.out.println(result);
+        JAXBElement<AssessResponse> jaxbReponse = (JAXBElement<AssessResponse>) template.marshalSendAndReceive(jaxbRequest, credentialsWSMessageCallBack);
+        AssessResponse assessResponse = jaxbReponse.getValue();
+
+        List<AttributeType> attributes = assessResponse.getGlobalInstance().getAttribute();
+        for(AttributeType attribute : attributes){
+            if (attribute.getId().equals("base_premium")){
+                System.out.println("Value of base_premium : " + attribute.getNumberVal());
+            }
+        }
 
 
     }
