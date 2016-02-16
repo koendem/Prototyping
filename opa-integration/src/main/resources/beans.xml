@@ -1,0 +1,39 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="messageFactory" class="org.springframework.ws.soap.saaj.SaajSoapMessageFactory"/>
+
+    <bean id="marshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+        <property name="contextPath" value="com.oracle.opa"/>
+    </bean>
+
+    <bean id="messageSender"
+          class="org.springframework.ws.transport.http.CommonsHttpMessageSender" />
+
+    <!--
+    <bean id="messageSender" class="org.springframework.ws.transport.http.HttpComponentsMessageSender">
+        <property name="credentials">
+            <bean class="org.apache.http.auth.UsernamePasswordCredentials">
+                <constructor-arg value="admin"/>
+                <constructor-arg value="password"/>
+            </bean>
+        </property>
+    </bean>
+    -->
+
+    <bean id="webServiceTemplate" class="org.springframework.ws.client.core.WebServiceTemplate">
+        <constructor-arg ref="messageFactory"/>
+        <property name="marshaller" ref="marshaller" />
+        <property name="unmarshaller" ref="marshaller"/>
+        <property name="messageSender" ref="messageSender"/>
+
+    </bean>
+
+    <bean id="wsSecurityInterceptor" class="org.springframework.ws.soap.security.wss4j.Wss4jSecurityInterceptor">
+
+    </bean>
+
+
+
+</beans>

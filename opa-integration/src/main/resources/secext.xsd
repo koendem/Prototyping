@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+Legal Disclaimer
+
+The presentation, distribution or other dissemination of the information 
+contained in this specification is not a license, either expressly or impliedly, 
+to any intellectual property owned or controlled by IBM or Microsoft and\or any other 
+third party.  IBM and Microsoft and\or any other third party may have patents, patent 
+applications, trademarks, copyrights, or other intellectual property rights 
+covering subject matter in this document.  The furnishing of this document 
+does not give you any license to IBM's and Microsoft's or any other third party's patents, 
+trademarks, copyrights, or other intellectual property.
+
+This specification and the information contained herein is provided on an "AS IS"
+ basis and to the maximum extent permitted by applicable law, IBM and Microsoft provides 
+the document AS IS AND WITH ALL FAULTS, and hereby disclaims all other warranties 
+and conditions, either express, implied or statutory, including, but not limited 
+to, any (if any) implied warranties, duties or conditions of merchantability, of 
+fitness for a particular purpose, of accuracy or completeness of responses, of 
+results, of workmanlike effort, of lack of viruses, and of lack of negligence, 
+all with regard to the document. ALSO, THERE IS NO WARRANTY OR CONDITION OF 
+TITLE, QUIET ENJOYMENT, QUIET POSSESSION, CORRESPONDENCE TO DESCRIPTION OR 
+NON-INFRINGEMENT OF ANY INTELLECTUAL PROPERTY RIGHTS WITH REGARD TO THE DOCUMENT.
+
+IN NO EVENT WILL IBM or MICROSOFT BE LIABLE TO ANY OTHER PARTY FOR THE COST OF PROCURING 
+SUBSTITUTE GOODS OR SERVICES, LOST PROFITS, LOSS OF USE, LOSS OF DATA, OR ANY 
+INCIDENTAL, CONSEQUENTIAL, DIRECT, INDIRECT, OR SPECIAL DAMAGES WHETHER UNDER 
+CONTRACT, TORT, WARRANTY, OR OTHERWISE, ARISING IN ANY WAY OUT OF THIS OR ANY 
+OTHER AGREEMENT RELATING TO THIS DOCUMENT, WHETHER OR NOT SUCH PARTY HAD ADVANCE 
+NOTICE OF THE POSSIBILITY OF SUCH DAMAGES.
+
+Copyright Notice
+
+Copyright 2001, 2002 IBM Corporation and Microsoft Corporation. All rights reserved.
+-->
+<xsd:schema targetNamespace="http://schemas.xmlsoap.org/ws/2002/04/secext" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/04/secext" xmlns="http://schemas.xmlsoap.org/ws/2002/04/secext" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" elementFormDefault="qualified" attributeFormDefault="unqualified" version="0.2">
+  <xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+  <xsd:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="http://www.w3.org/TR/xmldsig-core/xmldsig-core-schema.xsd"/>
+  <xsd:element name="Security">
+    <xsd:annotation>
+      <xsd:documentation>
+                This element defines header block to use for security-relevant data directed at a specific SOAP actor.
+           </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded">
+          <xsd:annotation>
+            <xsd:documentation>
+                                The use of "any" is to allow extensibility and different forms of security data.
+                        </xsd:documentation>
+          </xsd:annotation>
+        </xsd:any>
+      </xsd:sequence>
+      <xsd:anyAttribute processContents="lax"/>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="UsernameToken">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="Username"/>
+        <xsd:element ref="Password" minOccurs="0"/>
+      </xsd:sequence>
+      <xsd:attribute name="Id" type="xsd:ID"/>
+      <xsd:anyAttribute namespace="##other"/>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Username">
+    <xsd:complexType>
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+          <xsd:anyAttribute namespace="##other"/>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Password">
+    <xsd:complexType>
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+          <xsd:attribute name="Type" type="xsd:QName"/>
+          <xsd:anyAttribute namespace="##other"/>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="BinarySecurityToken">
+    <xsd:annotation>
+      <xsd:documentation>A security token that is encoded in binary</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+          <xsd:attribute name="Id" type="xsd:ID"/>
+          <xsd:attribute name="ValueType" type="xsd:QName"/>
+          <xsd:attribute name="EncodingType" type="xsd:QName"/>
+          <xsd:anyAttribute namespace="##other" processContents="strict"/>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="SecurityTokenReference">
+    <xsd:annotation>
+      <xsd:documentation>
+            This element is used reference a security token.
+            </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="Reference"/>
+        <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:choice>
+      <xsd:attribute name="Id" type="xsd:ID"/>
+      <xsd:anyAttribute namespace="##other" processContents="lax"/>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Reference">
+    <xsd:complexType>
+      <xsd:attribute name="URI" type="xsd:anyURI"/>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:simpleType name="PasswordTypeEnum">
+    <xsd:restriction base="xsd:QName">
+      <xsd:enumeration value="wsse:PasswordText"/>
+      <xsd:enumeration value="wsse:PasswordDigest"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ValueTypeEnum">
+    <xsd:restriction base="xsd:QName">
+      <xsd:enumeration value="wsse:X509v3"/>
+      <xsd:enumeration value="wsse:Kerberosv5TGT"/>
+      <xsd:enumeration value="wsse:Kerberosv5ST"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="EncodingTypeEnum">
+    <xsd:restriction base="xsd:QName">
+      <xsd:enumeration value="wsse:Base64Binary"/>
+      <xsd:enumeration value="wsse:HexBinary"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="FaultcodeEnum">
+    <xsd:restriction base="xsd:QName">
+      <xsd:enumeration value="wsse:UnsupportedSecurityToken"/>
+      <xsd:enumeration value="wsse:UnsupportedAlgorithm"/>
+      <xsd:enumeration value="wsse:InvalidSecurity"/>
+      <xsd:enumeration value="wsse:InvalidSecurityToken"/>
+      <xsd:enumeration value="wsse:FailedAuthentication"/>
+      <xsd:enumeration value="wsse:FailedCheck"/>
+      <xsd:enumeration value="wsse:SecurityTokenUnavailable"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>

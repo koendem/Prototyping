@@ -1,3 +1,9 @@
+http://docs.spring.io/spring-ws/site/reference/html/client.html
+http://springwebservices.blogspot.be/p/user-authentication-in-spring-ws.html
+http://stackoverflow.com/questions/14571273/spring-ws-client-not-setting-soapaction-header
+http://stackoverflow.com/questions/18641928/consume-webservice-service-in-spring-ws-using-wsdl
+http://onlineappsdba.com/index.php/2011/08/16/weblogic-startup-fails-with-unable-to-obtain-lock-on-server-may-already-be-running/
+
 
 WebLogic
 =============
