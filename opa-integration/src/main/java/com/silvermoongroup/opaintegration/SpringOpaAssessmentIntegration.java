@@ -3,11 +3,12 @@ package com.silvermoongroup.opaintegration;
 import com.oracle.opa.AssessRequest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.client.core.WebServiceTemplate;
-import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
 import org.springframework.ws.soap.security.wss4j.Wss4jSecurityInterceptor;
 import org.springframework.xml.transform.StringResult;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by koen on 13.02.16.
@@ -32,7 +33,9 @@ public class SpringOpaAssessmentIntegration {
 
         System.out.println("wsTemplate : " + wsTemplate);
 
-        AssessRequest request = new OpaAssessRequestBuilder().constructOpaAssessRequest();
+        OpaAttribute unknown= null;
+        List<OpaAttribute> inputValues= new ArrayList<OpaAttribute>();
+        AssessRequest request = new OpaAssessRequestBuilder().constructOpaAssessRequest(unknown, inputValues);
 
         StringResult result = (StringResult) wsTemplate.marshalSendAndReceive(request);
         System.out.println(result);
