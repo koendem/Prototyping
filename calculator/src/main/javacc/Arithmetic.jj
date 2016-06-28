@@ -1,6 +1,7 @@
 options
 {
     LOOKAHEAD=2;
+    STATIC=false;
 }
 PARSER_BEGIN(Arithmetic)
 
