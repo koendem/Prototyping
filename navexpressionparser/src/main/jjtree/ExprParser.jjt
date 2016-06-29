@@ -6,7 +6,7 @@
 
 options
 {
-  LOOKAHEAD=4;
+  LOOKAHEAD=2;
   IGNORE_CASE = false;
   MULTI=true;
   VISITOR = true;
@@ -104,55 +104,4 @@ void domainNavigation() #void : {}
 }
 
 
-/*
-void domainNavigation() #void : {}
-{
-    (domainStep())  [ <CONCAT> domainNavigation() #DomainNavigation(2) ]
-}
-
-void domainStep() : {Token t; }
-{
-  t = <DOMAINSTEP> {jjtThis.value = t.image; }
-}
-*.
-/*
-void domainNavigation() #void : {}
-{
-    (kindNavigation()) <SEMIC> kindNavigation() #KindNavigation(2)
-}
-
-
-void domainNavigation() #void : {}
-{
-    (domainStep())  [ <CONCAT> domainNavigation() #DomainNavigation(2) ]
-}
-
-void domainStep() : {Token t; }
-{
-  t = <DOMAINSTEP> {jjtThis.value = t.image; }
-}
-*/
-
-
-
-/*
-
-
-void domainNavigation() #void : {}
-{
- ((kindNavigation()) <SEMIC> (domainSteps())) #DomainNavigation(2)
-}
-
-void domainSteps() #void : {}
-{
-    (domainStep())  [ <CONCAT> domainSteps() #DomainSteps(2) ]
-}
-
-void domainStep() : {Token t; }
-{
- t = <DOMAINSTEP> {jjtThis.value = t.image;}
-}
-
-
-*/
 
