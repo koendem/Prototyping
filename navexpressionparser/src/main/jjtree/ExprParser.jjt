@@ -1,0 +1,91 @@
+// Name:ExprParser.jjt
+// Date: 29 June 2016
+//
+// Definition of the ExprParser syntax. Includes abstract syntax tree generation
+//
+
+options
+{
+  IGNORE_CASE = false;
+  MULTI=true;
+  VISITOR = true;
+  STATIC=false;
+}
+
+PARSER_BEGIN(ExprParser)
+package com.silvermoongroup.navexpressionparser;
+
+import java.io.*;
+import java.util.*;
+
+
+public class ExprParser
+{
+
+
+
+}
+
+PARSER_END(ExprParser)
+
+TOKEN_MGR_DECLS:
+{
+
+}
+
+SKIP:   /* Whitespace */
+{
+  "\t"
+| "\n"
+| "\r"
+
+}
+
+TOKEN:
+{
+  <CONCAT: ".">
+| <LITERAL: "\""(["a"-"z","A"-"Z","0"-"9", " ", "<", ">", "&","/","'",".","-"])+ "\"" >
+| <KINDSTEP: ((["a"-"z","A"-"Z","0"-"9"])+  | ("\'"(["a"-"z","A"-"Z","0"-"9"," "])+  "\'")
+             ) >
+| <SEMIC: ";">
+| <DOMAINSTEP: (["a"-"z","A"-"Z", "_"])+>
+}
+
+
+/* production rules for the language.
+navPathExpression =
+              <LITERAL>
+| kindNavigation
+| kindNavigation <SEMIC> domainNavigation
+
+
+kindNavigation =
+         <KINDSTEP>
+        | <KINDSTEP>  <CONCAT>  kindNavigation
+domainNavigation =  <DOMAINSTEP> ( <CONCAT>  <DOMAINSTEP>)*
+
+
+  | (kindNavigation()) ( <SEMIC> domainNavigation() ) {return jjtThis;} #DomainNavigation(2)
+*/
+
+SimpleNode navPathExpression() : {}
+{
+    literal()
+  | (kindNavigation())
+}
+
+void literal() : {Token t;}
+{
+    t = <LITERAL> {jjtThis.value = t.image; }
+}
+
+void kindNavigation() #void : {}
+{
+    (kindStep())  [ <CONCAT> kindNavigation() #KindNavigation(2) ]
+}
+
+void kindStep() : {Token t; String name;}
+{
+  t = <KINDSTEP> {jjtThis.value = t.image; name = t.image;}
+}
+
