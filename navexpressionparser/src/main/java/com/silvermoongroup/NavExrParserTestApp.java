@@ -7,24 +7,26 @@ import com.silvermoongroup.navexpressionparser.ExprParser;
 import com.silvermoongroup.navexpressionparser.ParseException;
 import com.silvermoongroup.navexpressionparser.SimpleNode;
 
-/**
- * Hello world!
- *
- */
+
 public class NavExrParserTestApp
 {
     public static void main( String[] args ) throws ParseException {
-        String testLiteral = "\"This is a literal\"";
-        String kindNavPath1 = "kind1";
-        String kindNavPath2 = "kind1.'insured object'.value";
+        String[] tests = {"\"This is a literal\"",
+                          "kind1",
+                       //   "kind1.'insured object'.value",
+                          "kind2.'insured person';defaultName.firstName"};
 
-        Reader stringReader = new StringReader(testLiteral);
+        for(int i=0; i< tests.length; i++){
+            Reader stringReader = new StringReader(tests[i]);
 
-        ExprParser parser = new ExprParser(stringReader);
-        SimpleNode root = parser.navPathExpression();
+            ExprParser parser = new ExprParser(stringReader);
+            SimpleNode root = parser.navPathExpression();
 
-        System.out.println("Printing AST for : "+testLiteral);
-        root.dump(" ");
+            System.out.println("Printing AST for : "+tests[i]);
+            root.dump(" ");
+        }
+
+
 
     }
 }

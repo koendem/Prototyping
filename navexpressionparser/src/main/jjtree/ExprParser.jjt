@@ -6,10 +6,12 @@
 
 options
 {
+  LOOKAHEAD=4;
   IGNORE_CASE = false;
   MULTI=true;
   VISITOR = true;
   STATIC=false;
+  NODE_CLASS="com.silvermoongroup.navexpressionparser.NavExpressionSimpleNode";
 }
 
 PARSER_BEGIN(ExprParser)
@@ -56,36 +58,60 @@ TOKEN:
 navPathExpression =
               <LITERAL>
 | kindNavigation
-| kindNavigation <SEMIC> domainNavigation
+| domainNavigation
 
 
 kindNavigation =
          <KINDSTEP>
         | <KINDSTEP>  <CONCAT>  kindNavigation
-domainNavigation =  <DOMAINSTEP> ( <CONCAT>  <DOMAINSTEP>)*
 
 
-  | (kindNavigation()) ( <SEMIC> domainNavigation() ) {return jjtThis;} #DomainNavigation(2)
+domainNavigation = kindNavigation <SEMIC> domainSteps
+
+domainSteps = <DOMAINSTEP> ( <CONCAT>  <DOMAINSTEP>)*
+
 */
 
 SimpleNode navPathExpression() : {}
 {
-    literal()
+ (   literal()
+  | (domainNavigation())
   | (kindNavigation())
+ ) {return jjtThis;}
 }
 
-void literal() : {Token t;}
+void literal() :
 {
-    t = <LITERAL> {jjtThis.value = t.image; }
+  Token t;
 }
+{
+    t = <LITERAL> {jjtThis.value = t.image; /* where is this processed*/}
+}
+
 
 void kindNavigation() #void : {}
 {
     (kindStep())  [ <CONCAT> kindNavigation() #KindNavigation(2) ]
 }
 
-void kindStep() : {Token t; String name;}
+void kindStep() : {Token t; }
 {
-  t = <KINDSTEP> {jjtThis.value = t.image; name = t.image;}
+  t = <KINDSTEP> {jjtThis.value = t.image; }
 }
+
+void domainNavigation() #void : {}
+{
+ (kindNavigation()) <SEMIC> domainSteps() {}
+}
+
+void domainSteps() #void : {}
+{
+    (domainStep())  [ <CONCAT> domainSteps() #DomainSteps(2) ]
+}
+
+void domainStep() : {Token t; }
+{
+ t = <DOMAINSTEP> {jjtThis.value = t.image;}
+}
+
 
