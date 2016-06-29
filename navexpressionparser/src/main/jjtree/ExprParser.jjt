@@ -46,8 +46,8 @@ SKIP:   /* Whitespace */
 TOKEN:
 {
   <CONCAT: ".">
-| <LITERAL: "\""(["a"-"z","A"-"Z","0"-"9", " ", "<", ">", "&","/","'",".","-"])+ "\"" >
-| <KINDSTEP: ((["a"-"z","A"-"Z","0"-"9"])+  | ("\'"(["a"-"z","A"-"Z","0"-"9"," "])+  "\'")
+| <LITERAL: "\"" (["a"-"z","A"-"Z","0"-"9", " ", "<", ">", "&","/","'",".","-"])+ "\"" >
+| <KINDSTEP: ((["a"-"z","A"-"Z","0"-"9"])+  | ("\'" (["a"-"z","A"-"Z","0"-"9"," "])+  "\'")
              ) >
 | <SEMIC: ";">
 | <DOMAINSTEP: (["a"-"z","A"-"Z", "_"])+>
@@ -74,20 +74,19 @@ domainSteps = <DOMAINSTEP> ( <CONCAT>  <DOMAINSTEP>)*
 
 SimpleNode navPathExpression() : {}
 {
- (   literal()
-  | (domainNavigation())
-  | (kindNavigation())
+ (   (literal()) | (compoundNavigation())
  ) {return jjtThis;}
 }
 
-void literal() :
-{
-  Token t;
-}
+void literal() : { Token t; }
 {
     t = <LITERAL> {jjtThis.value = t.image; /* where is this processed*/}
 }
 
+void compoundNavigation() #void : {}
+{
+  (kindNavigation()) [ <SEMIC> (domainNavigation()) #CompoundNavigation(2) ]
+}
 
 void kindNavigation() #void : {}
 {
@@ -101,7 +100,47 @@ void kindStep() : {Token t; }
 
 void domainNavigation() #void : {}
 {
- (kindNavigation()) <SEMIC> domainSteps() {}
+    (kindStep())  [ <CONCAT> kindNavigation() #DomainNavigation(2) ]
+}
+
+
+/*
+void domainNavigation() #void : {}
+{
+    (domainStep())  [ <CONCAT> domainNavigation() #DomainNavigation(2) ]
+}
+
+void domainStep() : {Token t; }
+{
+  t = <DOMAINSTEP> {jjtThis.value = t.image; }
+}
+*.
+/*
+void domainNavigation() #void : {}
+{
+    (kindNavigation()) <SEMIC> kindNavigation() #KindNavigation(2)
+}
+
+
+void domainNavigation() #void : {}
+{
+    (domainStep())  [ <CONCAT> domainNavigation() #DomainNavigation(2) ]
+}
+
+void domainStep() : {Token t; }
+{
+  t = <DOMAINSTEP> {jjtThis.value = t.image; }
+}
+*/
+
+
+
+/*
+
+
+void domainNavigation() #void : {}
+{
+ ((kindNavigation()) <SEMIC> (domainSteps())) #DomainNavigation(2)
 }
 
 void domainSteps() #void : {}
@@ -114,4 +153,6 @@ void domainStep() : {Token t; }
  t = <DOMAINSTEP> {jjtThis.value = t.image;}
 }
 
+
+*/
 
