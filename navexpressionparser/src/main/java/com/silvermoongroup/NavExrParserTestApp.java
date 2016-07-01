@@ -14,7 +14,13 @@ public class NavExrParserTestApp
         String[] tests = {"\"This is a literal\"",
                 "kind1",
                 "kind1.'insured object'.value",
-                "kind2.'insured person';defaultName.firstName"};
+                "kind2.'insured person';defaultName.firstName",
+                "kind2.all",
+                "'insured person';defaultName",
+                "topLevelAgreement.'insured person';defaultName.firstName.startDate",
+                "request"
+        };
+
 
         for(int i=0; i< tests.length; i++){
             Reader stringReader = new StringReader(tests[i]);

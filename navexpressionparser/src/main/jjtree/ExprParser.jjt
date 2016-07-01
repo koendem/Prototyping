@@ -47,60 +47,88 @@ TOKEN:
 {
   <CONCAT: ".">
 | <LITERAL: "\"" (["a"-"z","A"-"Z","0"-"9", " ", "<", ">", "&","/","'",".","-"])+ "\"" >
-| <KINDSTEP: ((["a"-"z","A"-"Z","0"-"9"])+  | ("\'" (["a"-"z","A"-"Z","0"-"9"," "])+  "\'")
+| <TOPLEVELAGREEMENT: "topLevelAgreement">
+| <REQUEST: "request">
+| <ALL: "all">
+| <EXPRESSIONSTEP: ((["a"-"z","A"-"Z","0"-"9"])+  | ("\'" (["a"-"z","A"-"Z","0"-"9"," "])+  "\'")
              ) >
 | <SEMIC: ";">
-| <DOMAINSTEP: (["a"-"z","A"-"Z", "_"])+>
 }
 
 
 /* production rules for the language.
 navPathExpression =
               <LITERAL>
-| kindNavigation
-| domainNavigation
+              | <TOPLEVELAGREEMENT> [<CONCAT> compoundNavigation]
+              | <REQUEST> [<CONCAT> compoundNavigation]
+              | compoundNavigation
 
 
-kindNavigation =
-         <KINDSTEP>
-        | <KINDSTEP>  <CONCAT>  kindNavigation
+compoundNavigation = kindNavigation [ <SEMIC> domainNavigation ]
 
 
-domainNavigation = kindNavigation <SEMIC> domainSteps
+kindNavigation = navigationStep() [ <CONCAT> kindNavigation ]
 
-domainSteps = <DOMAINSTEP> ( <CONCAT>  <DOMAINSTEP>)*
+navigationStep = <KINDSTEP>
+
+doaminNavigation = navigationStep() [ <CONCAT> domainNavigation ]
 
 */
 
 SimpleNode navPathExpression() : {}
 {
- (   (literal()) | (compoundNavigation())
+ (     (literal())
+     | ( topLevelAgreement() [ <CONCAT> compoundNavigation()])
+     | ( request() [ <CONCAT> compoundNavigation()])
+     | (compoundNavigation())
  ) {return jjtThis;}
+}
+
+
+void topLevelAgreement() : {Token t;}
+{
+ t= <TOPLEVELAGREEMENT> {jjtThis.value = t.image;}
+}
+
+void request() : {Token t;}
+{
+ t= <REQUEST> {jjtThis.value = t.image;}
 }
 
 void literal() : { Token t; }
 {
-    t = <LITERAL> {jjtThis.value = t.image; /* where is this processed*/}
+    t = <LITERAL> {jjtThis.value = t.image; }
 }
 
-void compoundNavigation() #void : {}
+void compoundNavigation() #void : {Token t;}
 {
-  (kindNavigation()) [ <SEMIC> (domainNavigation()) #CompoundNavigation(2) ]
+  (kindNavigation()) [all()][ (domainNavigation()) ]
+}
+
+void all() : {Token t;}
+{
+ <CONCAT>
+ (t = <ALL> {jjtThis.value = t.image;} )
 }
 
 void kindNavigation() #void : {}
 {
-    (kindStep())  [ <CONCAT> kindNavigation() #KindNavigation(2) ]
+    (navigationStep())  [ <CONCAT> kindNavigation() ]
 }
 
-void kindStep() : {Token t; }
+void navigationStep() : {Token t; }
 {
-  t = <KINDSTEP> {jjtThis.value = t.image; }
+  t = <EXPRESSIONSTEP> {jjtThis.value = t.image; }
 }
 
-void domainNavigation() #void : {}
+void domainNavigation() : {}
 {
-    (kindStep())  [ <CONCAT> kindNavigation() #DomainNavigation(2) ]
+    <SEMIC> domainNavigations()
+}
+
+void domainNavigations() #void : {}
+{
+    (navigationStep())  [ <CONCAT> domainNavigations() ]
 }
 
 
