@@ -22,6 +22,15 @@ public abstract class NavExpressionSimpleNode extends SimpleNode {
             sb.append(" -- value: ");
             sb.append(jjtGetValue());
         }
+        if (this.children != null){
+            if (this.children.length == 1){
+                sb.append(" -- 1 child");
+            }
+            if (this.children.length > 1) {
+                sb.append(" -- "+ this.children.length + " children");
+            }
+
+        }
         return sb.toString();
     }
 }

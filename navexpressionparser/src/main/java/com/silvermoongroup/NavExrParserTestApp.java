@@ -16,6 +16,8 @@ public class NavExrParserTestApp
                 "kind1.'insured object'.value",
                 "kind2.'insured person';defaultName.firstName",
                 "kind2.all",
+                "'Business Extension'.all.'Limit of Liability'",
+                "topLevelAgreement.children(Coverage).Premium",
                 "'insured person';defaultName",
                 "topLevelAgreement.'insured person';defaultName.firstName.startDate",
                 "request"
