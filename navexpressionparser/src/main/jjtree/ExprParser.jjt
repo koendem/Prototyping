@@ -51,6 +51,7 @@ TOKEN:
 | <REQUEST: "request">
 | <CHILDREN: "children">
 | <DESCENDANTS: "descendants">
+| <INSTANCEOF: "instanceOf">
 | <ALL: "all">
 | <EXPRESSIONSTEP: ((["a"-"z","A"-"Z","0"-"9"])+  | ("\'" (["a"-"z","A"-"Z","0"-"9"," "])+  "\'")
              ) >
@@ -75,6 +76,8 @@ kindNavigation = navigationStep() [ <CONCAT> kindNavigation ]
 
 navigationStep = <KINDSTEP>
 
+type = <KINDSTEP>
+
 doaminNavigation = navigationStep() [ <CONCAT> domainNavigation ]
 
 
@@ -82,6 +85,7 @@ children = <CHILDREN> <LPAREN> navigationStep() <RPAREN>
 
 descendants = <DESCENDANTS> <LPAREN> navigationStep() <RPAREN>
 
+instanceOf = <INSTANCEOF> <LPAREN> type() <RPAREN>
 */
 
 SimpleNode navPathExpression() : {}
@@ -128,17 +132,26 @@ void descendants() : {}
 {
   <DESCENDANTS> <LPAREN> navigationStep() <RPAREN>
 }
-
+void instanceOf() : {}
+{
+  <INSTANCEOF> <LPAREN> type() <RPAREN>
+}
 void kindNavigation() #void : {}
 {
     (navigationStep()
     | all()
     | children()
     | descendants()
+	| instanceOf()
     )  [ <CONCAT> kindNavigation() ]
 }
 
 void navigationStep() : {Token t; }
+{
+  t = <EXPRESSIONSTEP> {jjtThis.value = t.image; }
+}
+
+void type() : {Token t; }
 {
   t = <EXPRESSIONSTEP> {jjtThis.value = t.image; }
 }
@@ -150,7 +163,7 @@ void domainNavigation() : {}
 
 void domainNavigations() #void : {}
 {
-    (navigationStep())  [ <CONCAT> domainNavigations() ]
+    (kindNavigation())  [ <CONCAT> domainNavigations() ]
 }
 
 

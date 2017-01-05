@@ -12,6 +12,7 @@ public class NavExrParserTestApp
 {
     public static void main( String[] args ) throws ParseException {
         String[] tests = {"\"This is a literal\"",
+                "policyholder;instanceOf('Party')",
                 "kind1",
                 "kind1.'insured object'.value",
                 "kind2.'insured person';defaultName.firstName",
