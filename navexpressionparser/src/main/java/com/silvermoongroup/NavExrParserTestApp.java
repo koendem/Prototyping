@@ -13,6 +13,10 @@ public class NavExrParserTestApp
     public static void main( String[] args ) throws ParseException {
         String[] tests = {"\"This is a literal\"",
                 "policyholder;instanceOf('Party')",
+                "parent.kind",
+                "product",
+                "this.ancestor('Structural Component')",
+                "self.kind",
                 "kind1",
                 "kind1.'insured object'.value",
                 "kind2.'insured person';defaultName.firstName",
@@ -22,7 +26,12 @@ public class NavExrParserTestApp
                 "topLevelAgreement.descendants(Coverage).Premium",
                 "'insured person';defaultName",
                 "topLevelAgreement.'insured person';defaultName.firstName.startDate",
-                "request"
+                "request",
+                "insured.contains(policyholder)",
+                "insured.first",
+                "insured.isEmpty",
+                "insured.size",
+                "collection.unique"
         };
 
 

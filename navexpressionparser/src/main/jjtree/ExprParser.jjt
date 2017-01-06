@@ -47,12 +47,22 @@ TOKEN:
 {
   <CONCAT: ".">
 | <LITERAL: "\"" (["a"-"z","A"-"Z","0"-"9", " ", "<", ">", "&","/","'",".","-"])+ "\"" >
-| <TOPLEVELAGREEMENT: "topLevelAgreement">
+| <TOPLEVELAGREEMENT: "topLevelAgreement" | "agreement">
+| <SELF: "this" | "self">
 | <REQUEST: "request">
 | <CHILDREN: "children">
+| <ANCESTOR: "ancestor">
 | <DESCENDANTS: "descendants">
 | <INSTANCEOF: "instanceOf">
+| <PARENT: "parent">
+| <PRODUCT: "product">
 | <ALL: "all">
+| <KIND: "kind">
+| <CONTAINS: "contains">
+| <FIRST: "first">
+| <ISEMPTY: "isEmpty">
+| <SIZE: "size">
+| <UNIQUE: "unique">
 | <EXPRESSIONSTEP: ((["a"-"z","A"-"Z","0"-"9"])+  | ("\'" (["a"-"z","A"-"Z","0"-"9"," "])+  "\'")
              ) >
 | <SEMIC: ";">
@@ -64,8 +74,11 @@ TOKEN:
 /* production rules for the language.
 navPathExpression =
               <LITERAL>
+			  | <PRODUCT>
               | <TOPLEVELAGREEMENT> [<CONCAT> compoundNavigation]
+              | <SELF> [<CONCAT> compoundNavigation]
               | <REQUEST> [<CONCAT> compoundNavigation]
+              | <PARENT> [<CONCAT> compoundNavigation]
               | compoundNavigation
 
 
@@ -76,27 +89,44 @@ kindNavigation = navigationStep() [ <CONCAT> kindNavigation ]
 
 navigationStep = <KINDSTEP>
 
-type = <KINDSTEP>
+type = <EXPRESSIONSTEP>
 
 doaminNavigation = navigationStep() [ <CONCAT> domainNavigation ]
 
 
-children = <CHILDREN> <LPAREN> navigationStep() <RPAREN>
+ancestor = <ANCESTOR> <LPAREN> type() <RPAREN>
 
-descendants = <DESCENDANTS> <LPAREN> navigationStep() <RPAREN>
+children = <CHILDREN> <LPAREN> type() <RPAREN>
+
+descendants = <DESCENDANTS> <LPAREN> type() <RPAREN>
 
 instanceOf = <INSTANCEOF> <LPAREN> type() <RPAREN>
+
+
+Collection processing:
+
+processing = contains() | first() | isEmpty() | size() | unique()
+contains = <CONTAINS> <LPAREN> type() <RPAREN>
+
 */
 
 SimpleNode navPathExpression() : {}
 {
- (     (literal())
+ ((    (literal())
+     | (product())
      | ( topLevelAgreement() [ <CONCAT> compoundNavigation()])
+     | ( self() [ <CONCAT> compoundNavigation()])
      | ( request() [ <CONCAT> compoundNavigation()])
+     | ( parent() [ <CONCAT> compoundNavigation()])
      | (compoundNavigation())
- ) {return jjtThis;}
+ ) (<CONCAT> processing())? )
+ {return jjtThis;}
 }
 
+void product() : {Token t;}
+{
+ t= <PRODUCT> {jjtThis.value = t.image;}
+}
 
 void topLevelAgreement() : {Token t;}
 {
@@ -106,6 +136,16 @@ void topLevelAgreement() : {Token t;}
 void request() : {Token t;}
 {
  t= <REQUEST> {jjtThis.value = t.image;}
+}
+
+void self() : {Token t;}
+{
+ t= <SELF> {jjtThis.value = t.image;}
+}
+
+void parent() : {Token t;}
+{
+ t= <PARENT> {jjtThis.value = t.image;}
 }
 
 void literal() : { Token t; }
@@ -123,14 +163,24 @@ void all() : {Token t;}
  (t = <ALL> {jjtThis.value = t.image;} )
 }
 
+void kind() : {Token t;}
+{
+ (t = <KIND> {jjtThis.value = t.image;} )
+}
+
 void children() : {}
 {
-  <CHILDREN> <LPAREN> navigationStep() <RPAREN>
+  <CHILDREN> <LPAREN> type() <RPAREN>
+}
+
+void ancestor() : {}
+{
+  <ANCESTOR> <LPAREN> type() <RPAREN>
 }
 
 void descendants() : {}
 {
-  <DESCENDANTS> <LPAREN> navigationStep() <RPAREN>
+  <DESCENDANTS> <LPAREN> type() <RPAREN>
 }
 void instanceOf() : {}
 {
@@ -140,7 +190,9 @@ void kindNavigation() #void : {}
 {
     (navigationStep()
     | all()
+	| kind()
     | children()
+	| ancestor()
     | descendants()
 	| instanceOf()
     )  [ <CONCAT> kindNavigation() ]
@@ -164,6 +216,37 @@ void domainNavigation() : {}
 void domainNavigations() #void : {}
 {
     (kindNavigation())  [ <CONCAT> domainNavigations() ]
+}
+
+//collection processing
+//could add #void, but leaving it out might be easier for the interpreter to classify
+void processing() : {}
+{
+	(contains() | first() | isEmpty() | size() | unique())
+}
+void contains() : {}
+{
+  <CONTAINS> <LPAREN> type() <RPAREN>
+}
+
+void first() : {Token t;}
+{
+ (t = <FIRST> {jjtThis.value = t.image;} )
+}
+
+void isEmpty() : {Token t;}
+{
+ (t = <ISEMPTY> {jjtThis.value = t.image;} )
+}
+
+void size() : {Token t;}
+{
+ (t = <SIZE> {jjtThis.value = t.image;} )
+}
+
+void unique() : {Token t;}
+{
+ (t = <UNIQUE> {jjtThis.value = t.image;} )
 }
 
 
