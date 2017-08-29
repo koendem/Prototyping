@@ -13,6 +13,7 @@ public class NavExrParserTestApp
     public static void main( String[] args ) throws ParseException {
         String[] tests = {"\"This is a literal\"",
                 "policyholder;instanceOf('Party')",
+                "policyholder;defaultContactPoint.instanceOf('Postal Address')",
                 "parent.kind",
                 "product",
                 "this.ancestor('Structural Component')",

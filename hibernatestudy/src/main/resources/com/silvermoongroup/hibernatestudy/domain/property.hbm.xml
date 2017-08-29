@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-cascade="all-delete-orphan">
+
+  <class name="com.silvermoongroup.hibernatestudy.domain.Property" table="TBL_PROPERTY" >
+
+    <id name="id" column="ID" type="java.lang.Long">
+      <generator class="native">
+      </generator>
+    </id>
+
+    <property name="value" type="java.lang.String" column="NAME" not-null="true" />
+
+    <many-to-one name="agreement" class="com.silvermoongroup.hibernatestudy.domain.Agreement">
+      <column name="agreement_id" not-null="false"/>
+    </many-to-one>
+
+    <many-to-one name="request" class="com.silvermoongroup.hibernatestudy.domain.Request">
+      <column name="request_id" not-null="false"/>
+    </many-to-one>
+
+    <many-to-one name="kind" class="com.silvermoongroup.hibernatestudy.domain.Kind" cascade="none">
+      <column name="kind_id" not-null="true"/>
+    </many-to-one>
+
+  </class>
+
+
+</hibernate-mapping>
