@@ -19,11 +19,20 @@ public class Main
 {
     private static Connection connection;
 
-    private static String username = "db2admin";
+    //db2
+//    private static String username = "db2inst5";
+//    private static String password = "db2Admin";
+//    private static String host = "localhost";
+//    private static String port = "51000";
+//    private static String dbName = "lunosdem";
+
+    //postgres
+    private static String username = "postgres";
     private static String password = "password";
     private static String host = "localhost";
-    private static String port = "50000";
-    private static String dbName = "IAALUNOS";
+    private static String port = "5432";
+    private static String dbName = "lunosdem";
+
     private static String workingDir = "output";
     private static Mode mode;
 
@@ -196,8 +205,8 @@ public class Main
             else if(mode == Mode.insert)
             {
                 Class.forName("org.postgresql.Driver").newInstance();
-                connection = DriverManager.getConnection("jdbc:postgresql://localhost/test?user=iaauser&password=password&ssl=true");
-                connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/" + dbName + "?user=" + username + "&password=" + password + "&ssl=true");
+                //connection = DriverManager.getConnection("jdbc:postgresql://localhost/test?user=iaauser&password=password&ssl=true");
+                connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/" + dbName + "?user=" + username + "&password=" + password + "&ssl=false");
             }
         } catch(Exception ex)
         {
