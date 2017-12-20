@@ -1,6 +1,5 @@
 package blobExtract;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,7 +8,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.postgresql.largeobject.LargeObject;
@@ -20,18 +18,20 @@ public class Main
     private static Connection connection;
 
     //db2
-//    private static String username = "db2inst5";
-//    private static String password = "db2Admin";
-//    private static String host = "localhost";
-//    private static String port = "51000";
-//    private static String dbName = "lunosdem";
+    private static String username = "db2admin";
+    private static String password = "db2Admin";
+    private static String host = "localhost";
+    private static String port = "50000";
+    private static String dbName = "lunosdem";
 
     //postgres
+    /*
     private static String username = "postgres";
     private static String password = "password";
     private static String host = "localhost";
     private static String port = "5432";
     private static String dbName = "lunosdem";
+    */
 
     private static String workingDir = "output";
     private static Mode mode;
@@ -122,7 +122,7 @@ public class Main
                 runExtract();
                 break;
             case insert:
-                runInsertOid();
+                runInsert();
                 break;
         }
         System.out.println("Done.");
@@ -132,39 +132,28 @@ public class Main
     {
         new File(workingDir).mkdirs();//ensure output directory exists
 
-        //update table set DOCUMENT_BINARY_CTNT = [PDF data] WHERE ID = [PDF name]
-        ResultSet results = connection.createStatement().executeQuery("SELECT ID, DOCUMENT_BINARY_CTNT FROM iaacommu.TBL_DOCUMENT");
+        //TODO get this from DB metadata instead of hardcoding
+        runExtract("iaacommu", "TBL_DOCUMENT", "DOCUMENT_BINARY_CTNT");
+    }
+
+    private static void runExtract(String schema, String tabName, String fieldName) throws Exception
+    {
+        ResultSet results = connection.createStatement().executeQuery("SELECT ID, " + fieldName + " FROM " + schema + "." + tabName);
         while(results.next())
         {
             int id = results.getInt(1);
-            System.out.println("transferring " + id + "...");
+            String fileName = schema + "." + tabName + "." + fieldName + "." + id;
+            System.out.println("transferring " + fileName);
 
-            File outputFile = new File(workingDir + File.separator + id + ".pdf");
+            File outputFile = new File(workingDir + File.separator + fileName + ".blob");
             OutputStream fileOut = new FileOutputStream(outputFile);
             transfer(results.getBlob(2).getBinaryStream(), fileOut);
         }
         results.close();
+        //TODO set fields to null after extraction?
     }
 
-    private static void runInsertImmediate()throws Exception
-    {
-        File fileList[] = new File(workingDir).listFiles();
-        if(fileList == null)
-            throw new IOException("Not a directory");
-        for(File file:fileList)
-        {
-            int id = Integer.parseInt(file.getName().split("\\.")[0]);
-            System.out.println("transferring " + id + "...");
-
-            InputStream fileReader = new FileInputStream(file);
-            StringBuilder sql = new StringBuilder("UPDATE iaacommu.TBL_DOCUMENT SET DOCUMENT_BINARY_CTNT = '\\x");
-            transferHexString(fileReader, sql);
-            sql.append("' WHERE ID = ").append(id);
-            connection.createStatement().execute(sql.toString());
-        }
-    }
-
-    private static void runInsertOid()throws Exception
+    private static void runInsert()throws Exception
     {
         //internal table system: https://www.postgresql.org/docs/9.0/static/catalog-pg-largeobject.html
         //code adapted from:     https://jdbc.postgresql.org/documentation/80/binary-data.html
@@ -177,42 +166,33 @@ public class Main
             throw new IOException("Not a directory");
         for(File file : fileList)
         {
-            int fileID = Integer.parseInt(file.getName().split("\\.")[0]);
-            System.out.println("transferring " + fileID + "...");
+            String[] fileBits = file.getName().split("\\.");
+            String schema = fileBits[0];
+            String tabName = fileBits[1];
+            String fieldName = fileBits[2];
+            int fileID = Integer.parseInt(fileBits[3]);
+            System.out.println("transferring " + schema + "." + tabName + "." + fieldName + "." + fileID);
 
             long oid = transferOid(new FileInputStream(file));
-            PreparedStatement ps = connection
-                    .prepareStatement("UPDATE iaacommu.TBL_DOCUMENT SET DOCUMENT_BINARY_CTNT = ? WHERE ID = ?");
-            ps.setLong(1, oid);
-            ps.setLong(2, fileID);
-            ps.executeUpdate();
-            ps.close();
+            connection.createStatement().execute("UPDATE " + schema + "." + tabName + " SET " + fieldName + " = " + oid + " WHERE ID = " + fileID);
             //commit this file
             connection.commit();
         }
         connection.setAutoCommit(true);
     }
 
-    private static void loadConns()
+    private static void loadConns()throws Exception
     {
-        try
+        if(mode == Mode.extract)
         {
-            if(mode == Mode.extract)
-            {
-                Class.forName("com.ibm.db2.jcc.DB2Driver").newInstance();
-                connection = DriverManager.getConnection("jdbc:db2://" + host + ":" + port + "/" + dbName + ":user=" + username + ";password=" + password + ";");
-            }
-            else if(mode == Mode.insert)
-            {
-                Class.forName("org.postgresql.Driver").newInstance();
-                //connection = DriverManager.getConnection("jdbc:postgresql://localhost/test?user=iaauser&password=password&ssl=true");
-                connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/" + dbName + "?user=" + username + "&password=" + password + "&ssl=false");
-            }
-        } catch(Exception ex)
-        {
-            System.err.println("could not load driver(s): " + ex);
+            Class.forName("com.ibm.db2.jcc.DB2Driver").newInstance();
+            connection = DriverManager.getConnection("jdbc:db2://" + host + ":" + port + "/" + dbName + ":user=" + username + ";password=" + password + ";");
         }
-
+        else if(mode == Mode.insert)
+        {
+            Class.forName("org.postgresql.Driver").newInstance();
+            connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/" + dbName + "?user=" + username + "&password=" + password + "&ssl=false");
+        }
     }
 
     private static long transferOid(InputStream in)throws Exception
@@ -233,22 +213,6 @@ public class Main
         return oid;
     }
 
-    private static void transferHexString(InputStream in, StringBuilder out)throws IOException
-    {
-        BufferedInputStream bin = new BufferedInputStream(in);
-        while(true)
-        {
-            int nextVal = bin.read();
-            if(nextVal == -1)
-            {
-                bin.close();
-                return;//end of file
-            }
-            out.append(Character.forDigit((nextVal >> 4) & 0xF, 16));//upper
-            out.append(Character.forDigit(nextVal & 0xF, 16));//lower
-        }
-    }
-
     private static void transfer(InputStream in, OutputStream out)throws IOException
     {
         byte[] buffer = new byte[2048];
@@ -265,8 +229,8 @@ public class Main
     private static void printUsage()
     {
         System.out.println("Usage:\n" +
-                                   "-extract: extract PDFs from DB2\n" +
-                                   "-insert: insert PDFs into Postgres\n" +
+                                   "-extract: extract BLOBs from DB2\n" +
+                                   "-insert: insert BLOBs into Postgres\n" +
                                    "-u: username (default 'db2admin')\n" +
                                    "-P: password (default 'password')\n" +
                                    "-H: IP of database (default 'localhost')\n" +
